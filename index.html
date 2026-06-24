@@ -10,6 +10,7 @@
     <link rel="icon" href="icon-512.png">
     <link rel="apple-touch-icon" href="icon-512.png">
     <title>Stack Tower</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1312069565940070" crossorigin="anonymous"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -40,6 +41,28 @@
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
+</script>
+<script type="text/javascript">
+    window.SDK_OPTIONS = {
+        gameId: "7f9u6wlbsmonevqrhvfjqfvyai3ogz0v",
+        onEvent: function (a) {
+            switch (a.name) {
+                case "SDK_GAME_PAUSE":
+                    if(window.stackTowerPause) window.stackTowerPause();
+                    break;
+                case "SDK_GAME_START":
+                    if(window.stackTowerResume) window.stackTowerResume();
+                    break;
+                case "SDK_READY":
+                    break;
+            }
+        },
+    };
+    (function (a, b, c) {
+        var d = a.getElementsByTagName(b)[0];
+        a.getElementById(c) || (a = a.createElement(b), a.id = c, a.src = "https://api.gamemonetize.com/sdk.js",
+        d.parentNode.insertBefore(a, d));
+    })(document, "script", "gamemonetize-sdk");
 </script>
 <script>
 (() => {
@@ -79,7 +102,7 @@ if ('serviceWorker' in navigator) {
     let trail = [];
     let camY = 0, tCamY = 0;
     let shake = 0, flash = 0, flashClr = '#fff';
-    let pulse = 0, gTime = 0, lastT = 0;
+    let pulse = 0, gTime = 0, lastT = 0, gamePaused = false;
     let isNew = false, zoneIdx = 0;
     let slowT = 0, slowF = 1;
     let zoneAnn = null, cTier = 0, bgPulse = 0;
@@ -241,6 +264,7 @@ if ('serviceWorker' in navigator) {
     function endGame(){
         state='GAME_OVER'; shake=8;
         if(score>best){ best=score; localStorage.setItem('stackBest2',best); isNew=true; }
+        if(typeof sdk!=='undefined'&&sdk.showBanner){try{sdk.showBanner();}catch(e){}}
     }
 
     function perfectFX(cx,cy){
@@ -640,9 +664,12 @@ if ('serviceWorker' in navigator) {
 
     function loop(ts){
         const dt=Math.min((ts-lastT)/16.667,3); lastT=ts;
-        update(dt); draw();
+        if(!gamePaused){update(dt);} draw();
         requestAnimationFrame(loop);
     }
+
+    window.stackTowerPause=()=>{gamePaused=true;};
+    window.stackTowerResume=()=>{gamePaused=false;};
 
     initBg();
     requestAnimationFrame(ts=>{lastT=ts;loop(ts);});
